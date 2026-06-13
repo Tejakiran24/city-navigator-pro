@@ -4,7 +4,12 @@ import { lazy, Suspense } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 
-const TrafficMap = lazy(() => import("@/components/traffic-map").then((module) => ({ default: module.TrafficMap })));
+const TrafficMap = lazy(() => {
+  if (typeof window === "undefined") {
+    return Promise.resolve({ default: () => <div className="city-grid size-full" /> });
+  }
+  return import("@/components/traffic-map").then((module) => ({ default: module.TrafficMap }));
+});
 const previewLocations = [
   { id: "times", name: "Times Square", latitude: 40.758, longitude: -73.9855 },
   { id: "central", name: "Grand Central", latitude: 40.7527, longitude: -73.9772 },

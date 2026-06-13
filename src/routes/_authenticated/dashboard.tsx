@@ -18,7 +18,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { findRoute, type GraphNode, type GraphRoad, type RouteResult, type Algorithm } from "@/lib/graph";
 import { calculateBestRoute, deleteSavedRoute, getTrafficWorkspace, recordRouteSearch, saveRoute } from "@/lib/traffic.functions";
 
-const TrafficMap = lazy(() => import("@/components/traffic-map").then((module) => ({ default: module.TrafficMap })));
+const TrafficMap = lazy(() => {
+  if (typeof window === "undefined") {
+    return Promise.resolve({ default: () => <div className="grid size-full place-items-center text-sm text-muted-foreground">Loading live map…</div> });
+  }
+  return import("@/components/traffic-map").then((module) => ({ default: module.TrafficMap }));
+});
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "UrbanFlow Navigation | Live Traffic" }, { name: "description", content: "Plan faster journeys with live traffic intelligence and route guidance." }] }),
