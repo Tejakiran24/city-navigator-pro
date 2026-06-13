@@ -1,13 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Eye, EyeOff, MapPinned } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Navigation } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — CityNav" }, { name: "description", content: "Sign in to save routes, receive alerts, and access smart traffic analytics." }, { property: "og:title", content: "Sign in — CityNav" }, { property: "og:description", content: "Access smart traffic navigation and graph-powered routing." }] }),
+  head: () => ({ meta: [{ title: "Sign in | UrbanFlow Navigation" }, { name: "description", content: "Sign in to plan routes, receive live alerts, and access your traffic insights." }, { property: "og:title", content: "Sign in | UrbanFlow Navigation" }, { property: "og:description", content: "Access smarter city navigation and real-time traffic intelligence." }] }),
   component: AuthPage,
 });
 
@@ -42,12 +42,12 @@ function AuthPage() {
     <Link to="/" className="absolute left-5 top-5 z-10 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Home</Link>
     <section className="glass-panel relative z-10 grid w-full max-w-4xl overflow-hidden rounded-3xl lg:grid-cols-[1fr_1.1fr]">
       <div className="hidden bg-map p-10 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
-        <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground"><MapPinned /></span><span className="font-display text-xl font-semibold">CityNav</span></div>
-        <div><p className="mb-3 text-xs font-bold uppercase tracking-[.2em] text-primary">Graph intelligence</p><h1 className="text-4xl font-semibold leading-tight">Every road is an edge. Every decision, optimized.</h1><p className="mt-4 text-sm leading-6 opacity-70">Compare Dijkstra, A*, BFS and DFS on a live weighted city graph.</p></div>
-        <div className="grid grid-cols-3 gap-3 text-center"><div><b className="block text-xl">12</b><small className="opacity-60">Nodes</small></div><div><b className="block text-xl">19</b><small className="opacity-60">Edges</small></div><div><b className="block text-xl">4</b><small className="opacity-60">Algorithms</small></div></div>
+        <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"><Navigation className="-rotate-12" /></span><span className="font-display text-xl font-semibold">UrbanFlow</span></div>
+        <div><p className="mb-3 text-xs font-bold uppercase tracking-[.2em] text-primary">Smart city navigation</p><h1 className="text-4xl font-semibold leading-tight">A faster, calmer way through the city.</h1><p className="mt-4 text-sm leading-6 opacity-70">Plan journeys with live traffic conditions, reliable arrival times, and proactive road alerts.</p></div>
+        <div className="grid grid-cols-3 gap-3 text-center"><div><b className="block text-xl">24/7</b><small className="opacity-60">Live traffic</small></div><div><b className="block text-xl">87%</b><small className="opacity-60">City flow</small></div><div><b className="block text-xl">12 min</b><small className="opacity-60">Avg. trip</small></div></div>
       </div>
       <div className="p-6 sm:p-10">
-        <div className="mb-8"><p className="text-sm font-semibold text-primary">{mode === "register" ? "Create account" : mode === "forgot" ? "Account recovery" : "Welcome back"}</p><h2 className="mt-1 text-3xl font-semibold">{mode === "register" ? "Join the network" : mode === "forgot" ? "Reset your password" : "Enter the control center"}</h2></div>
+        <div className="mb-8"><p className="text-sm font-semibold text-primary">{mode === "register" ? "Create account" : mode === "forgot" ? "Account recovery" : "Welcome back"}</p><h2 className="mt-1 text-3xl font-semibold">{mode === "register" ? "Start navigating smarter" : mode === "forgot" ? "Reset your password" : "Continue your journey"}</h2></div>
         {mode !== "forgot" && <Button type="button" variant="glass" className="mb-5 h-11 w-full" onClick={google}>Continue with Google</Button>}
         <form className="space-y-4" onSubmit={submit}>
           {mode === "register" && <Input aria-label="Display name" placeholder="Display name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required />}
