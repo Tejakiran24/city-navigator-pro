@@ -11,16 +11,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
-    let token = '';
-    const request = getRequest();
-    if (request?.headers) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.replace('Bearer ', '');
-      }
-    }
-
-    let userId = '00000000-0000-0000-0000-000000000000';
+    const userId = '00000000-0000-0000-0000-000000000000';
     let supabase: any;
 
     if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
@@ -28,9 +19,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
         SUPABASE_URL,
         SUPABASE_PUBLISHABLE_KEY,
         {
-          global: {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          },
           auth: {
             storage: undefined,
             persistSession: false,
@@ -38,17 +26,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
           },
         }
       );
-
-      if (token) {
-        try {
-          const { data, error } = await supabase.auth.getClaims(token);
-          if (!error && data?.claims?.sub) {
-            userId = data.claims.sub;
-          }
-        } catch (e) {
-          console.warn('Token claims parsing failed:', e);
-        }
-      }
     } else {
       console.warn('[Supabase] Missing environment variables for requireSupabaseAuth. Falling back to dummy mock client.');
       const createDummyBuilder = () => {
@@ -81,7 +58,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       context: {
         supabase,
         userId,
-        claims: token ? {} : null,
+        claims: null,
       },
     });
   },
