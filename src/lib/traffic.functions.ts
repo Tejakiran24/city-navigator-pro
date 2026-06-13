@@ -26,8 +26,12 @@ export const getTrafficWorkspace = createServerFn({ method: "GET" })
         context.supabase.from("user_roles").select("role").eq("user_id", context.userId),
         context.supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(20),
       ]);
-      const error = [nodes, roads, alerts, searches, saved, favorites, profile, roles, notifications].find((result) => result.error)?.error;
-      if (error) throw error;
+      const dbError = [nodes, roads, alerts, searches, saved, favorites, profile, roles, notifications].find((result) => result.error)?.error;
+      if (dbError) throw dbError;
+      if (!nodes.data || nodes.data.length === 0) {
+        console.log("Database intersections empty, falling back to mock workspace.");
+        return getMockWorkspace();
+      }
       
       return { 
         nodes: nodes.data ?? [], 
@@ -56,6 +60,7 @@ export const calculateBestRoute = createServerFn({ method: "POST" })
         context.supabase.from("roads").select("*"),
       ]);
       if (nodes.error || roads.error) throw new Error("Database query failed");
+      if (!nodes.data || nodes.data.length === 0) throw new Error("No intersections in database");
       const result = findRoute(nodes.data as GraphNode[], roads.data as GraphRoad[], data.sourceId, data.destinationId, "astar", data.preference === "shortest" ? "distance" : "time");
       if (!result) throw new Error("No available route was found.");
       return result;

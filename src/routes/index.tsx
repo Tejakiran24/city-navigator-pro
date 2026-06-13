@@ -495,8 +495,6 @@ function Dashboard() {
                 onRoadTrafficChange={handleRoadTrafficChange}
                 
                 // Editor props
-                editorMode={editorMode}
-                setEditorMode={setEditorMode}
                 pendingNodeCoords={pendingNodeCoords}
                 setPendingNodeCoords={setPendingNodeCoords}
                 newNodeName={newNodeName}
@@ -579,8 +577,6 @@ function MapWorkspace(props: {
   setActiveAlgorithm: (v: Algorithm) => void;
   onRoadTrafficChange: (roadId: string, level: "low" | "medium" | "heavy" | "closed") => void;
 
-  editorMode: boolean;
-  setEditorMode: (v: boolean) => void;
   pendingNodeCoords: { lat: number; lng: number } | null;
   setPendingNodeCoords: (v: { lat: number; lng: number } | null) => void;
   newNodeName: string;
