@@ -1,29 +1,31 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Activity, ArrowRight, BellRing, GitBranch, MapPinned, Route as RouteIcon, ShieldCheck, Sparkles } from "lucide-react";
+import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "CityNav — Graph-Powered Traffic Navigation" },
+      { name: "description", content: "Visualize graph algorithms, compare optimized city routes, and monitor congestion with CityNav." },
+      { property: "og:title", content: "CityNav — Graph-Powered Traffic Navigation" },
+      { property: "og:description", content: "A professional smart-city platform for routing, traffic management, and graph algorithm education." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const features = [{ icon: GitBranch, title: "4 graph algorithms", text: "Compare Dijkstra, A*, BFS and DFS with visited-node playback." }, { icon: Activity, title: "Traffic-aware weights", text: "Road distance, travel time and congestion alter every route." }, { icon: ShieldCheck, title: "Emergency priority", text: "Simulate ambulance, police and fire paths that avoid congestion." }];
+  return <main className="min-h-screen overflow-hidden bg-background text-foreground">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/75 backdrop-blur-xl"><nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6"><Link to="/" className="flex items-center gap-3 font-display text-lg font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground"><MapPinned className="size-5" /></span>CityNav</Link><div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex"><a href="#platform" className="hover:text-foreground">Platform</a><a href="#algorithms" className="hover:text-foreground">Algorithms</a><a href="#analytics" className="hover:text-foreground">Analytics</a></div><Button asChild variant="hero"><Link to="/auth">Launch platform <ArrowRight /></Link></Button></nav></header>
+    <section className="relative min-h-[92vh] pt-16 city-grid"><div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_35%),linear-gradient(to_bottom,transparent,var(--background))]" /><div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-24 sm:px-6 lg:grid-cols-[.92fr_1.08fr] lg:py-32">
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65 }}><span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary"><Sparkles className="size-3" /> Smart city graph intelligence</span><h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-.045em] sm:text-6xl lg:text-7xl">Find the path.<br/><span className="text-primary">Understand the graph.</span></h1><p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">A live traffic operations platform where intersections become nodes, roads become weighted edges, and every route tells an algorithmic story.</p><div className="mt-8 flex flex-wrap gap-3"><Button asChild variant="hero" size="xl"><Link to="/auth">Explore the city graph <ArrowRight /></Link></Button><Button asChild variant="glass" size="xl"><a href="#algorithms">See algorithms</a></Button></div><div className="mt-10 flex flex-wrap gap-7 text-sm text-muted-foreground"><span><b className="text-2xl text-foreground">12</b><br/>Intersections</span><span><b className="text-2xl text-foreground">19</b><br/>Weighted roads</span><span><b className="text-2xl text-foreground">4</b><br/>Search methods</span></div></motion.div>
+      <motion.div initial={{ opacity: 0, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .8, delay: .15 }} className="glass-panel relative aspect-[4/3] overflow-hidden rounded-3xl bg-map"><div className="absolute inset-0 opacity-30 city-grid" /><svg viewBox="0 0 700 520" className="absolute inset-0 size-full" aria-label="Animated smart city road graph"><g stroke="var(--border)" strokeWidth="8" fill="none"><path d="M30 400 L180 330 L290 380 L440 290 L660 330"/><path d="M80 120 L220 180 L360 100 L520 160 L640 80"/><path d="M180 330 L220 180 M290 380 L360 100 M440 290 L520 160"/></g><path d="M30 400 L180 330 L220 180 L360 100 L520 160 L640 80" fill="none" stroke="var(--primary)" strokeWidth="6" strokeDasharray="14 12" className="route-flow"/><g fill="var(--primary)">{[[30,400],[180,330],[220,180],[360,100],[520,160],[640,80]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="10"/>)}</g></svg><div className="glass-panel absolute left-5 top-5 rounded-2xl p-4"><p className="text-xs text-muted-foreground">Fastest route</p><p className="mt-1 font-display text-2xl font-semibold text-foreground">14.8 min</p><span className="text-xs text-success">● Low congestion</span></div><div className="glass-panel absolute bottom-5 right-5 flex items-center gap-3 rounded-2xl p-4"><RouteIcon className="text-primary"/><div><p className="text-xs text-muted-foreground">A* explored</p><b>7 of 12 nodes</b></div></div></motion.div>
+    </div></section>
+    <section id="platform" className="mx-auto max-w-7xl px-4 py-24 sm:px-6"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.22em] text-primary">Built to demonstrate</p><h2 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Graph theory you can drive through.</h2></div><div className="mt-12 grid gap-5 md:grid-cols-3">{features.map(({icon:Icon,title,text})=><article key={title} className="glass-panel rounded-2xl p-7"><span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary"><Icon/></span><h3 className="mt-6 text-xl font-semibold">{title}</h3><p className="mt-2 leading-7 text-muted-foreground">{text}</p></article>)}</div></section>
+    <section id="algorithms" className="border-y border-border bg-map py-24 text-primary-foreground"><div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="grid gap-12 lg:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-[.22em] text-primary">Algorithm lab</p><h2 className="mt-3 text-4xl font-semibold">Compare behavior, not just results.</h2><p className="mt-5 max-w-xl leading-7 opacity-65">Watch each search visit intersections. See why a heuristic changes A*, how Dijkstra respects weights, and why BFS and DFS behave differently.</p></div><div className="grid grid-cols-2 gap-3">{["Dijkstra","A* Search","Breadth-first","Depth-first"].map((name,i)=><div key={name} className="rounded-2xl border border-border bg-card/10 p-5"><span className="text-xs text-primary">0{i+1}</span><h3 className="mt-7 font-semibold">{name}</h3></div>)}</div></div></div></section>
+    <section id="analytics" className="mx-auto max-w-7xl px-4 py-24 sm:px-6"><div className="glass-panel grid overflow-hidden rounded-3xl lg:grid-cols-2"><div className="p-8 sm:p-12"><BellRing className="text-warning"/><h2 className="mt-6 text-4xl font-semibold">One city.<br/>One operational view.</h2><p className="mt-4 leading-7 text-muted-foreground">Traffic alerts, route history, saved journeys, emergency simulation, fuel estimates and algorithm analytics stay in one responsive control center.</p><Button asChild variant="hero" size="xl" className="mt-8"><Link to="/auth">Open control center</Link></Button></div><div className="min-h-80 bg-map p-8"><div className="grid h-full grid-cols-2 gap-4">{[["Routes analyzed","1,284"],["Average delay","6.2 min"],["Network flow","87%"],["Active alerts","03"]].map(([label,value])=><div key={label} className="rounded-2xl border border-border bg-card/10 p-5 text-primary-foreground"><p className="text-xs opacity-55">{label}</p><b className="mt-5 block font-display text-3xl">{value}</b></div>)}</div></div></div></section>
+    <footer className="border-t border-border py-8"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 text-sm text-muted-foreground sm:px-6"><span className="flex items-center gap-2 font-display text-foreground"><MapPinned className="size-4 text-primary"/> CityNav</span><span>Graph-powered smart city navigation</span></div></footer>
+  </main>;
 }
