@@ -50,7 +50,7 @@ export function findRoute(nodes: GraphNode[], roads: GraphRoad[], source: string
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const adjacency = new Map<string, Array<{ node: string; road: GraphRoad }>>();
   nodes.forEach((node) => adjacency.set(node.id, []));
-  roads.filter((road) => road.traffic_level !== "closed").forEach((road) => {
+  roads.filter((road) => road.traffic_level !== "closed" && byId.has(road.start_node) && byId.has(road.end_node)).forEach((road) => {
     adjacency.get(road.start_node)?.push({ node: road.end_node, road });
     if (road.bidirectional) adjacency.get(road.end_node)?.push({ node: road.start_node, road });
   });

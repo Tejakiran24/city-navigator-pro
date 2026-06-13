@@ -214,6 +214,8 @@ function Dashboard() {
     setCustomRoads(prev => prev.filter(r => r.start_node !== id && r.end_node !== id));
     if (source === id) setSource("");
     if (destination === id) setDestination("");
+    if (newRoadStart === id) setNewRoadStart("");
+    if (newRoadEnd === id) setNewRoadEnd("");
   };
 
   const handleDeleteRoad = (id: string) => {
@@ -236,10 +238,16 @@ function Dashboard() {
       alert("Please choose distinct junctions.");
       return;
     }
+    const startNode = customNodes.find(n => n.id === newRoadStart);
+    const endNode = customNodes.find(n => n.id === newRoadEnd);
+    if (!startNode || !endNode) {
+      alert("Selected junctions no longer exist.");
+      return;
+    }
     const weightMap = { low: 1.0, medium: 1.5, heavy: 2.5, closed: 99.0 };
     const newRoad: GraphRoad = {
       id: crypto.randomUUID(),
-      name: newRoadName.trim() || `${customNodes.find(n => n.id === newRoadStart)?.name} → ${customNodes.find(n => n.id === newRoadEnd)?.name}`,
+      name: newRoadName.trim() || `${startNode.name} → ${endNode.name}`,
       start_node: newRoadStart,
       end_node: newRoadEnd,
       distance_km: parseFloat(newRoadDistance) || 2.5,
@@ -314,8 +322,10 @@ function Dashboard() {
     customNodes.forEach(n => adj.set(n.id, []));
     customRoads.forEach(r => {
       if (r.traffic_level !== "closed") {
-        adj.get(r.start_node)?.push(r.end_node);
-        if (r.bidirectional) adj.get(r.end_node)?.push(r.start_node);
+        if (adj.has(r.start_node) && adj.has(r.end_node)) {
+          adj.get(r.start_node)?.push(r.end_node);
+          if (r.bidirectional) adj.get(r.end_node)?.push(r.start_node);
+        }
       }
     });
 
@@ -368,9 +378,11 @@ function Dashboard() {
     customRoads.forEach(r => {
       if (r.traffic_level !== "closed") {
         const dist = `${r.distance_km} km`;
-        matrix[r.start_node][r.end_node] = dist;
-        if (r.bidirectional) {
-          matrix[r.end_node][r.start_node] = dist;
+        if (matrix[r.start_node] && matrix[r.end_node]) {
+          matrix[r.start_node][r.end_node] = dist;
+          if (r.bidirectional) {
+            matrix[r.end_node][r.start_node] = dist;
+          }
         }
       }
     });
