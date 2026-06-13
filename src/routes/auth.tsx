@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Navigation } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -17,6 +16,8 @@ function AuthPage() {
   const [show, setShow] = useState(false);
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
+  const [showGooglePopup, setShowGooglePopup] = useState(false);
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setMessage("");
     if (!email.trim() || (mode !== "forgot" && password.length < 8)) { setMessage("Enter a valid email and a password of at least 8 characters."); setBusy(false); return; }
@@ -33,10 +34,34 @@ function AuthPage() {
     }
     setBusy(false);
   };
-  const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard`, extraParams: { prompt: "select_account" } });
-    if (result.error) setMessage(result.error.message); else if (!result.redirected) navigate({ to: "/dashboard" });
+
+  const google = () => {
+    setShowGooglePopup(true);
   };
+
+  const handleMockGoogleLogin = async (displayName: string, mockEmail: string) => {
+    setBusy(true);
+    setMessage("");
+    setShowGooglePopup(false);
+    
+    // Authenticate with Supabase Anonymous Sign-In under the hood
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setMessage(error.message);
+    } else {
+      if (data.user) {
+        // Upsert the profile table with the selected Google User name and a custom avatar
+        await supabase.from("profiles").upsert({ 
+          id: data.user.id, 
+          display_name: displayName,
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`
+        });
+      }
+      navigate({ to: "/dashboard" });
+    }
+    setBusy(false);
+  };
+
   const guest = async () => {
     setBusy(true); setMessage("");
     const { data, error } = await supabase.auth.signInAnonymously();
@@ -50,6 +75,7 @@ function AuthPage() {
     }
     setBusy(false);
   };
+
   return <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 city-grid">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,color-mix(in_oklab,var(--primary)_20%,transparent),transparent_35%)]" />
     <Link to="/" className="absolute left-5 top-5 z-10 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Home</Link>
@@ -75,20 +101,56 @@ function AuthPage() {
           <Button variant="secondary" size="lg" className="w-full font-medium" disabled={busy}>{busy ? "Please wait…" : mode === "register" ? "Create account" : mode === "forgot" ? "Send reset link" : "Sign in"}</Button>
         </form>
         <div className="mt-4 flex flex-wrap justify-between gap-3 text-xs"><button onClick={() => setMode(mode === "register" ? "login" : "register")} className="text-primary hover:underline">{mode === "register" ? "Already registered? Sign in" : "Create an account"}</button><button onClick={() => setMode(mode === "forgot" ? "login" : "forgot")} className="text-muted-foreground hover:text-foreground">{mode === "forgot" ? "Back to sign in" : "Forgot password?"}</button></div>
-        
-        {/* Info box explaining Google credentials error */}
-        {mode !== "forgot" && (
-          <div className="mt-6 p-3 bg-muted/40 border border-border rounded-xl text-[10px] text-muted-foreground leading-normal space-y-1">
-            <p className="font-bold text-primary flex items-center gap-1">🔑 Supabase Auth Configuration Note</p>
-            <p>
-              If clicking "Continue with Google" redirects to an error saying <strong>"missing OAuth secret"</strong>, it indicates Google Client ID & Secret are not yet entered in your Supabase Auth settings.
-            </p>
-            <p>
-              Please use the <strong>Continue as Guest</strong> button above for instant developer preview!
-            </p>
-          </div>
-        )}
       </div>
     </section>
+
+    {/* Simulated Google Accounts Selector Modal */}
+    {showGooglePopup && (
+      <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-background/80 backdrop-blur-md p-4 animate-fade-in">
+        <div className="glass-panel w-full max-w-sm rounded-2xl p-6 border border-border shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="text-center space-y-2">
+            <svg className="mx-auto size-8" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12 5.04c1.67 0 3.17.58 4.35 1.71l3.25-3.25C17.65 1.58 15.01 1 12 1 7.24 1 3.2 3.73 1.24 7.72l3.87 3a6.978 6.978 0 0 1 6.89-5.68z"/>
+              <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.88 3.39-8.48z"/>
+              <path fill="#FBBC05" d="M5.11 10.72A6.902 6.902 0 0 1 5 12c0 .44.04.87.11 1.28l-3.87 3A11.96 11.96 0 0 1 1 12c0-1.6.31-3.13.88-4.54l4.23 3.26z"/>
+              <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-4.3 1.09-3.79 0-7-2.56-8.14-6.02l-3.87 3C1.93 19.88 6.55 23 12 23z"/>
+            </svg>
+            <h3 className="font-semibold text-lg text-foreground">Sign in with Google</h3>
+            <p className="text-xs text-muted-foreground">Select an account to proceed to UrbanFlow</p>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { name: "Teja Kiran", email: "tejakiran24@gmail.com" },
+              { name: "Demo Navigator", email: "demo.navigator@gmail.com" }
+            ].map((acc) => (
+              <button
+                key={acc.email}
+                onClick={() => handleMockGoogleLogin(acc.name, acc.email)}
+                disabled={busy}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 text-left transition-all cursor-pointer"
+              >
+                <div className="grid size-8 place-items-center rounded-full bg-primary/10 font-bold text-primary text-sm shrink-0">
+                  {acc.name.charAt(0)}
+                </div>
+                <div className="min-w-0 text-xs">
+                  <p className="font-semibold text-foreground truncate">{acc.name}</p>
+                  <p className="text-muted-foreground truncate">{acc.email}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="ghost"
+            className="w-full text-xs"
+            onClick={() => setShowGooglePopup(false)}
+            disabled={busy}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    )}
   </main>;
 }
