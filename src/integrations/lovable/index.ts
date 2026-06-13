@@ -12,27 +12,52 @@ type SignInOptions = {
 export const lovable = {
   auth: {
     signInWithOAuth: async (provider: "google" | "apple" | "microsoft" | "lovable", opts?: SignInOptions) => {
-      const result = await lovableAuth.signInWithOAuth(provider, {
-        redirect_uri: opts?.redirect_uri,
-        extraParams: {
-          ...opts?.extraParams,
-        },
-      });
-
-      if (result.redirected) {
-        return result;
-      }
-
-      if (result.error) {
-        return result;
-      }
-
+      // Check if we are running in an iframe (Lovable editor/sandbox environment)
+      let isLovableSandbox = false;
       try {
-        await supabase.auth.setSession(result.tokens);
+        isLovableSandbox = typeof window !== "undefined" && (window.self !== window.top || window.location.hostname.includes("lovable"));
       } catch (e) {
-        return { error: e instanceof Error ? e : new Error(String(e)) };
+        isLovableSandbox = true;
       }
-      return result;
+
+      if (isLovableSandbox) {
+        const result = await lovableAuth.signInWithOAuth(provider, {
+          redirect_uri: opts?.redirect_uri,
+          extraParams: {
+            ...opts?.extraParams,
+          },
+        });
+
+        if (result.redirected) {
+          return result;
+        }
+
+        if (result.error) {
+          return result;
+        }
+
+        try {
+          await supabase.auth.setSession(result.tokens);
+        } catch (e) {
+          return { error: e instanceof Error ? e : new Error(String(e)) };
+        }
+        return result;
+      } else {
+        // Standalone production/development website: use native Supabase OAuth redirect
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: provider === "lovable" ? "google" : (provider as any),
+          options: {
+            redirectTo: opts?.redirect_uri || `${window.location.origin}/dashboard`,
+            queryParams: opts?.extraParams,
+          },
+        });
+        
+        return {
+          redirected: !error,
+          error: error ? new Error(error.message) : null,
+          tokens: null as any
+        };
+      }
     },
   },
 };

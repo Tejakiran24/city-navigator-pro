@@ -21,6 +21,12 @@ export interface GraphRoad {
   bidirectional: boolean;
 }
 
+export interface SearchStep {
+  current: string;
+  frontier: string[];
+  visited: string[];
+}
+
 export interface RouteResult {
   path: string[];
   visited: string[];
@@ -29,6 +35,7 @@ export interface RouteResult {
   fuel: number;
   traffic: "low" | "medium" | "heavy" | "closed";
   algorithm: Algorithm;
+  steps?: SearchStep[];
 }
 
 const radians = (value: number) => (value * Math.PI) / 180;
@@ -49,14 +56,21 @@ export function findRoute(nodes: GraphNode[], roads: GraphRoad[], source: string
   });
   const parent = new Map<string, { previous: string; road: GraphRoad }>();
   const visited: string[] = [];
+  const steps: SearchStep[] = [];
 
   if (algorithm === "bfs" || algorithm === "dfs") {
     const frontier = [source];
     const seen = new Set([source]);
     while (frontier.length) {
+      const traceFrontier = [...frontier];
       const current = algorithm === "bfs" ? frontier.shift() : frontier.pop();
       if (!current) break;
       visited.push(current);
+      steps.push({
+        current,
+        frontier: traceFrontier,
+        visited: [...visited],
+      });
       if (current === target) break;
       for (const edge of adjacency.get(current) ?? []) {
         if (!seen.has(edge.node)) {
@@ -71,6 +85,7 @@ export function findRoute(nodes: GraphNode[], roads: GraphRoad[], source: string
     const open = new Set([source]);
     costs.set(source, 0);
     while (open.size) {
+      const traceFrontier = Array.from(open);
       let current = "";
       let best = Number.POSITIVE_INFINITY;
       open.forEach((id) => {
@@ -83,6 +98,11 @@ export function findRoute(nodes: GraphNode[], roads: GraphRoad[], source: string
       if (!current) break;
       open.delete(current);
       visited.push(current);
+      steps.push({
+        current,
+        frontier: traceFrontier,
+        visited: [...visited],
+      });
       if (current === target) break;
       for (const edge of adjacency.get(current) ?? []) {
         const weight = optimize === "distance" ? Number(edge.road.distance_km) : Number(edge.road.base_time_minutes) * Number(edge.road.traffic_weight);
@@ -111,5 +131,5 @@ export function findRoute(nodes: GraphNode[], roads: GraphRoad[], source: string
   const time = pathRoads.reduce((sum, road) => sum + Number(road.base_time_minutes) * Number(road.traffic_weight), 0);
   const levels = pathRoads.map((road) => road.traffic_level);
   const traffic = levels.includes("heavy") ? "heavy" : levels.includes("medium") ? "medium" : "low";
-  return { path, visited, distance, time, fuel: distance / 12, traffic, algorithm };
+  return { path, visited, distance, time, fuel: distance / 12, traffic, algorithm, steps };
 }
